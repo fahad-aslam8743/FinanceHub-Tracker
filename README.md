@@ -1,16 +1,22 @@
-# React + Vite
+# 🚀 FinanceHub - Secure Authentication System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive, and secure Finance Dashboard Authentication system built with **React 19**, **Supabase**, and **Tailwind CSS**. This project features a high-end skeuomorphic/neumorphic UI design and robust form validation using **React Hook Form**.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 🔐 **Secure Auth:** Fully integrated with Supabase Authentication (Email/Password).
+- 📝 **Smart Forms:** Real-time validation and error handling using `react-hook-form`.
+- 🎨 **Modern UI/UX:** Premium skeuomorphic design with sleek shadows and Indigo accents.
+- 📱 **Fully Responsive:** Optimized for Mobile, Tablet, and Desktop views.
+- ⚡ **Lightning Fast:** Built on Vite for an optimized development experience.
+- 🔔 **Toast Notifications:** Beautiful feedback alerts via `react-hot-toast`.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend:** React 19, Vite, Tailwind CSS
+- **Backend/Auth:** Supabase
+- **Icons:** Lucide-React
+- **Form Handling:** React Hook Form
+- **Routing:** React Router DOM v7
