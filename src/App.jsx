@@ -16,7 +16,7 @@ const App = () => {
           style: {
             borderRadius: '10px',
             background: '#333',
-            color: '#fff',
+            color: '#000000',
           },
         }} 
       />
