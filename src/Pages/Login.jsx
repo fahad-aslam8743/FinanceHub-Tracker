@@ -2,121 +2,124 @@ import React, { useState } from 'react';
 import { supabase } from '../API/supabase';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { TrendingUp, Loader2, Mail, Lock, ShieldCheck, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Command, Loader2, Mail, Lock, ShieldCheck, AlertCircle, ArrowRight } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    mode: "onBlur"
-  });
-
+  const { register, handleSubmit, formState: { errors } } = useForm({ mode: "onBlur" });
   const onSubmit = async (formData) => {
     const { email, password } = formData;
     setLoading(true);
-    
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      toast.error(error.message, {
-        style: { borderRadius: '15px', background: '#fff', color: '#333', border: '1px solid #fee2e2' }
-      });
-    } else {
-      toast.success('Access Granted! Welcome Back.', {
-        icon: '🔑',
-        style: { borderRadius: '15px', background: '#fff', color: '#333' }
-      });
-      navigate('/dashboard');
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Welcome Back');
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      toast.error('Connection failed');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5] p-6 selection:bg-indigo-100">
-      <div className="max-w-md w-full bg-slate-50 p-10 rounded-[3.5rem] shadow-[30px_30px_60px_#bebebe,-30px_-30px_60px_#ffffff] border border-white/60 relative overflow-hidden">
-        <div className="flex flex-col items-center mb-10 relative z-10">
-          <div className="p-5 bg-white rounded-\[1\.5rem] shadow-[8px_8px_16px_#d1d1d1,-8px_-8px_16px_#ffffff] mb-4 text-indigo-600 transition-transform hover:rotate-3 duration-300">
-            <TrendingUp size={36} strokeWidth={2.5}/>
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 md:p-6 selection:bg-indigo-100">
+      <Toaster position="top-center" />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-50/50 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50/50 blur-[120px] rounded-full" />
+      </div>
+      <div className="relative w-full max-w-[420px] z-10">
+        <div className="flex flex-col items-center mb-10">
+          <div className="w-14 h-14 bg-white shadow-xl shadow-slate-200/50 border border-slate-100 rounded-[1.5rem] flex items-center justify-center mb-6">
+            <Command size={28} className="text-slate-900" />
           </div>
-          <h2 className="text-3xl font-[1000] text-slate-800 tracking-tighter text-center uppercase">
-            Finance<span className="text-indigo-600">Hub</span>
-          </h2>
-          <div className="flex items-center gap-2 mt-2">
-            <ShieldCheck size={12} className="text-emerald-500" />
-            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Secure Session v1.0</p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tighter">FinanceHub</h2>
+          <div className="flex items-center gap-1.5 mt-2 opacity-40">
+            <ShieldCheck size={12} className="text-indigo-600" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Secure Protocol</p>
           </div>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 relative z-10" noValidate>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4 block italic">Authorized Email</label>
-            <div className="relative group">
-              <Mail className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${errors.email ? 'text-red-400' : 'text-slate-400 group-focus-within:text-indigo-500'}`} size={18} />
-              <input 
-                type="email" 
-                placeholder="name@finance.com" 
-                className={`w-full pl-14 pr-6 py-4 bg-slate-100 rounded-2xl text-slate-700 outline-none shadow-[inset_4px_4px_8px_#d1d1d1,inset_-4px_-4px_8px_#ffffff] focus:ring-4 transition-all placeholder:text-slate-300 font-medium ${errors.email ? 'ring-red-500/20 border-red-100' : 'ring-indigo-500/10'}`}
-                {...register("email", { 
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email format"
-                  }
-                })} 
-              />
-            </div>
-            {errors.email && (
-              <p className="text-red-500 text-[10px] ml-4 font-bold uppercase flex items-center gap-1">
-                <AlertCircle size={10}/> {errors.email.message}
-              </p>
-            )}
+        <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]">
+          <div className="mb-8 text-center md:text-left">
+            <h3 className="text-xl font-bold text-slate-900">Identity Verification</h3>
+            <p className="text-xs text-slate-400 mt-1 font-medium">Please enter your authorized credentials.</p>
           </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4 block italic">Access Key</label>
-            <div className="relative group">
-              <Lock className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${errors.password ? 'text-red-400' : 'text-slate-400 group-focus-within:text-indigo-500'}`} size={18} />
-              <input 
-                type="password" 
-                placeholder="••••••••" 
-                className={`w-full pl-14 pr-6 py-4 bg-slate-100 rounded-2xl text-slate-700 outline-none shadow-[inset_4px_4px_8px_#d1d1d1,inset_-4px_-4px_8px_#ffffff] focus:ring-4 transition-all placeholder:text-slate-300 font-medium ${errors.password ? 'ring-red-500/20 border-red-100' : 'ring-indigo-500/10'}`}
-                {...register("password", { required: "Password is required" })} 
-              />
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+            {/* Email Field */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Work Email</label>
+              <div className={`flex items-center bg-slate-50 border transition-all duration-300 rounded-2xl px-4 py-3.5
+                ${errors.email ? 'border-rose-200 bg-rose-50/30' : 'border-slate-100 focus-within:border-indigo-200 focus-within:bg-white focus-within:shadow-sm'}`}>
+                <Mail size={18} className="text-slate-300 mr-3" />
+                <input
+                  type="email"
+                  placeholder="name@finance.com"
+                  className="w-full bg-transparent text-sm font-semibold outline-none text-slate-700 placeholder:text-slate-300"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: "Invalid format" }
+                  })}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-rose-500 text-[10px] font-bold ml-1 flex items-center gap-1">
+                  <AlertCircle size={10}/> {errors.email.message}
+                </p>
+              )}
             </div>
-            {errors.password && (
-              <p className="text-red-500 text-[10px] ml-4 font-bold uppercase flex items-center gap-1">
-                <AlertCircle size={10}/> {errors.password.message}
-              </p>
-            )}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Access Key</label>
+              <div className={`flex items-center bg-slate-50 border transition-all duration-300 rounded-2xl px-4 py-3.5
+                ${errors.password ? 'border-rose-200 bg-rose-50/30' : 'border-slate-100 focus-within:border-indigo-200 focus-within:bg-white focus-within:shadow-sm'}`}>
+                <Lock size={18} className="text-slate-300 mr-3" />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full bg-transparent text-sm font-semibold outline-none text-slate-700 placeholder:text-slate-300"
+                  {...register("password", { required: "Key is required" })}
+                />
+              </div>
+              {errors.password && (
+                <p className="text-rose-500 text-[10px] font-bold ml-1 flex items-center gap-1">
+                  <AlertCircle size={10}/> {errors.password.message}
+                </p>
+              )}
+            </div>
+            <button
+              disabled={loading}
+              type="submit"
+              className="group w-full py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-200 transition-all duration-300 active:scale-95 disabled:opacity-50 mt-4 flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="animate-spin" size={18}/> : (
+                <>
+                  Verify Account
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
+          <div className="mt-8 text-center">
+            <p className="text-xs font-medium text-slate-400">
+              New associate? 
+              <Link to="/signup" className="ml-2 text-indigo-600 font-bold hover:text-indigo-800 transition-colors">
+                Apply for Access
+              </Link>
+            </p>
           </div>
-          <button 
-            disabled={loading}
-            type="submit"
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-[6px_6px_12px_#c2c2c2,-6px_-6px_12px_#ffffff] active:scale-[0.98] active:shadow-inner transition-all flex items-center justify-center gap-3 disabled:opacity-70 group"
-          >
-            {loading ? <Loader2 className="animate-spin" size={20}/> : (
-              <>
-                Confirm Identity
-                <div className="w-2 h-2 rounded-full bg-indigo-300 animate-pulse group-hover:bg-white transition-colors"></div>
-              </>
-            )}
-          </button>
-        </form>
-        <div className="mt-10 pt-8 border-t border-slate-200 text-center">
-          <p className="text-slate-400 text-sm font-medium">
-            Unauthorized user? 
-            <Link to="/signup" className="ml-2 text-indigo-600 font-black hover:text-indigo-800 transition-colors underline-offset-4 decoration-2">
-              Join the Hub
-            </Link>
-          </p>
         </div>
+        <p className="mt-8 text-center text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300">
+          Terminal v2.0.4 — © 2026
+        </p>
       </div>
     </div>
   );
 }
 
 export default Login;
-

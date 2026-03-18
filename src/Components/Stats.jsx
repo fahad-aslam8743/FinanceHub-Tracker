@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../API/supabase';
-import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Wallet } from 'lucide-react';
 
 const Stats = () => {
   const { data: transactions } = useQuery({
@@ -21,46 +21,43 @@ const Stats = () => {
   const balance = income - expense;
 
   return (
-    <div className="w-full mb-10 space-y-4">
-
-      {/* MAIN BALANCE CARD */}
-      <div className="backdrop-blur-xl bg-white/[0.06] border border-white/10 rounded-3xl p-6">
-
-        <p className="text-xs text-white/40 mb-2">Total Balance</p>
-
-        <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight">
-          ${balance.toLocaleString()}
-        </h1>
-
-      </div>
-
-      {/* INCOME / EXPENSE */}
-      <div className="grid grid-cols-2 gap-3">
-
-        {/* Income */}
-        <div className="backdrop-blur-xl bg-white/[0.06] border border-white/10 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <ArrowUpRight size={16} className="text-green-400" />
-            <p className="text-[10px] text-white/40 uppercase">Income</p>
-          </div>
-          <p className="text-lg font-semibold text-green-400">
-            +${income.toLocaleString()}
-          </p>
+    <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 bg-white/80 backdrop-blur-xl border border-slate-100 p-4 md:p-6 rounded-[2rem] shadow-sm">
+      <div className="flex items-center gap-4 w-full md:w-auto px-2">
+        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-lg">
+          <Wallet size={18} />
         </div>
-
-        {/* Expense */}
-        <div className="backdrop-blur-xl bg-white/[0.06] border border-white/10 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <ArrowDownLeft size={16} className="text-rose-400" />
-            <p className="text-[10px] text-white/40 uppercase">Expense</p>
-          </div>
-          <p className="text-lg font-semibold text-rose-400">
-            -${expense.toLocaleString()}
-          </p>
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Vault</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter leading-none">
+            ${balance.toLocaleString()}
+          </h1>
         </div>
-
       </div>
-
+      <div className="hidden md:block w-[1px] h-10 bg-slate-100" />
+      <div className="flex items-center justify-between md:justify-end gap-6 md:gap-12 w-full md:flex-1 px-2">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+            <ArrowUpRight size={16} strokeWidth={3} />
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Inflow</p>
+            <p className="text-sm md:text-lg font-black text-emerald-600 leading-none mt-0.5">
+              +${income.toLocaleString()}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-right">
+          <div>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Outflow</p>
+            <p className="text-sm md:text-lg font-black text-rose-600 leading-none mt-0.5">
+              -${expense.toLocaleString()}
+            </p>
+          </div>
+          <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
+            <ArrowDownLeft size={16} strokeWidth={3} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
