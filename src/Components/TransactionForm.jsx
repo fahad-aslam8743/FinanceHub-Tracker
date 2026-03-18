@@ -1,126 +1,155 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../API/supabase';
 import useAuth from '../hooks/useAuth';
-import { PlusCircle, Save, X, Tag, DollarSign } from 'lucide-react';
+import { Sparkles, ArrowRight, AlertCircle, DollarSign, PenTool } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const TransactionForm = ({ editingData, setEditingData }) => {
+const TransactionForm = ({ editingData, setEditingData, onSuccess }) => {
   const { session } = useAuth();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({ name: '', amount: '' });
+
+  const [type, setType] = useState('expense');
+
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({ mode: 'onChange' });
 
   useEffect(() => {
-    if (editingData) setFormData({ name: editingData.name, amount: editingData.amount });
-  }, [editingData]);
+    if (editingData) {
+      setValue('name', editingData.name);
+      setValue('amount', Math.abs(editingData.amount));
+      setType(editingData.amount < 0 ? 'expense' : 'income');
+    } else {
+      reset({ name: '', amount: '' });
+      setType('expense');
+    }
+  }, [editingData, setValue, reset]);
 
   const mutation = useMutation({
     mutationFn: async (newData) => {
-      if (editingData) {
-        return await supabase.from('transactions').update(newData).eq('id', editingData.id);
-      }
-      return await supabase.from('transactions').insert([{ ...newData, user_id: session.user.id }]);
-    },
-   onSuccess: () => {
-  queryClient.invalidateQueries(['transactions']);
-  setFormData({ name: '', amount: '' });
-  toast.success(editingData ? 'Record Updated!' : 'Transaction Added!', {
-    style: {
-      borderRadius: '20px',
-      background: '#f8fafc',
-      color: '#334155',
-      border: '1px solid white',
-      boxShadow: '8px 8px 16px #d1d1d1, -8px -8px 16px #ffffff',
-      fontWeight: 'bold',
-      fontSize: '14px'
-    },
-    iconTheme: {
-      primary: '#4f46e5',
-      secondary: '#fff',
-    },
-  });
-  
-  setEditingData(null);
-},
-  });
+      const payload = { 
+        ...newData,
+        amount: type === 'expense' ? -Math.abs(newData.amount) : Math.abs(newData.amount),
+        user_id: session.user.id,
+      };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    mutation.mutate({ name: formData.name, amount: parseFloat(formData.amount) });
-  };
+      return editingData
+        ? await supabase.from('transactions').update(payload).eq('id', editingData.id)
+        : await supabase.from('transactions').insert([payload]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['transactions']);
+      reset();
+      setEditingData(null);
+      setType('expense');
+      if (onSuccess) onSuccess();
+      toast.success('Saved');
+    },
+  });
 
   return (
-    <div className="w-full max-w-xl mx-auto p-2">
-      <form 
-        onSubmit={handleSubmit} 
-        className="bg-slate-50 p-8 rounded-[3rem] shadow-[30px_30px_60px_#bebebe,-30px_-30px_60px_#ffffff] border border-white/60 space-y-8"
+    <div className="w-full flex justify-center items-start sm:items-center px-4 sm:px-0">
+      <form
+        onSubmit={handleSubmit((data) => mutation.mutate(data))}
+        className="relative w-full sm:w-[480px] bg-white/10 dark:bg-white/5 border border-white/20 rounded-3xl p-4 sm:p-6 shadow-xl sm:shadow-2xl backdrop-blur-xl"
       >
-        <div className="flex justify-between items-center px-2">
-          <div className="flex items-center gap-3">
-             <div className="p-2 bg-indigo-100 rounded-xl shadow-[inset_2px_2px_5px_#bcbcbc,inset_-2px_-2px_5px_#ffffff]">
-                {editingData ? <Save className="text-indigo-600" size={20} /> : <PlusCircle className="text-indigo-600" size={20} />}
-             </div>
-             <h3 className="text-xl font-black text-slate-700">
-               {editingData ? 'Edit Entry' : 'New Entry'}
-             </h3>
-          </div>
-          {editingData && (
-            <button 
-              type="button"
-              onClick={() => setEditingData(null)} 
-              className="p-2 bg-slate-100 rounded-full shadow-[4px_4px_8px_#d1d1d1,-4px_-4px_8px_#ffffff] text-slate-400 hover:text-rose-500 transition-colors"
-            >
-              <X size={18} />
-            </button>
-          )}
+        {/* Glow (desktop only) */}
+        <div className="hidden sm:block absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-500 blur-[100px] rounded-full" />
+          <div className="absolute bottom-[-20px] right-[-20px] w-40 h-40 bg-violet-500 blur-[100px] rounded-full" />
         </div>
-        <div className="space-y-6">
-          <div className="group">
-            <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 ml-4 mb-2 block">
-              Transaction Details
-            </label>
-            <div className="relative">
-              <Tag className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-              <input 
-                type="text" 
-                placeholder="Ex: Starbucks Coffee" 
-                className="w-full pl-14 pr-6 py-5 bg-slate-100 rounded-\[2rem] text-slate-700 font-medium border-none shadow-[inset_6px_6px_12px_#d1d1d1,inset_-6px_-6px_12px_#ffffff] focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all placeholder:text-slate-400"
-                value={formData.name} 
-                onChange={(e) => setFormData({...formData, name: e.target.value})} 
-                required
-              />
-            </div>
+
+        <div className="relative z-10 flex flex-col space-y-5">
+
+          {/* Type Toggle */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setType('income')}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition
+                ${type === 'income' ? 'bg-green-500 text-white' : 'bg-white/20 text-white/60'}`}
+            >
+              Income
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('expense')}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition
+                ${type === 'expense' ? 'bg-rose-500 text-white' : 'bg-white/20 text-white/60'}`}
+            >
+              Expense
+            </button>
           </div>
-          <div className="group">
-            <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 ml-4 mb-2 block">
+
+          {/* Amount */}
+          <div className="space-y-1">
+            <label className="text-[10px] text-white/50 uppercase tracking-widest ml-1">
               Amount
             </label>
-            <div className="relative">
-              <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-              <input 
-                type="number" 
-                placeholder="0.00" 
-                className="w-full pl-14 pr-6 py-5 bg-slate-100 rounded-\[2rem] text-slate-700 font-bold border-none shadow-[inset_6px_6px_12px_#d1d1d1,inset_-6px_-6px_12px_#ffffff] focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all placeholder:text-slate-400"
-                value={formData.amount} 
-                onChange={(e) => setFormData({...formData, amount: e.target.value})} 
-                required
+            <div className={`flex items-center rounded-xl px-3 py-3 bg-white/10 border transition
+              ${errors.amount ? 'border-rose-400/50' : 'border-white/20 focus-within:border-indigo-400/60'}`}>
+              <DollarSign size={16} className="text-white/50 mr-2" />
+              <input
+                type="number"
+                step="0.01"
+                {...register('amount', {
+                  required: 'Amount required',
+                  validate: v => v != 0 || 'Cannot be zero',
+                })}
+                className="w-full bg-transparent text-lg font-semibold outline-none text-white placeholder:text-white/30"
+                placeholder="0.00"
               />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400 bg-slate-200 px-3 py-1 rounded-full shadow-[2px_2px_4px_#d1d1d1]">
-                - FOR EXPENSE
-              </div>
             </div>
+            {errors.amount && (
+              <p className="text-rose-400 text-[10px] ml-1 flex items-center gap-1">
+                <AlertCircle size={12} /> {errors.amount.message}
+              </p>
+            )}
+          </div>
+
+          {/* Name */}
+          <div className="space-y-1">
+            <label className="text-[10px] text-white/50 uppercase tracking-widest ml-1">
+              Category
+            </label>
+            <div className={`flex items-center rounded-xl px-3 py-3 bg-white/10 border transition
+              ${errors.name ? 'border-rose-400/50' : 'border-white/20 focus-within:border-indigo-400/60'}`}>
+              <PenTool size={16} className="text-white/50 mr-2" />
+              <input
+                {...register('name', {
+                  required: 'Name required',
+                  minLength: { value: 3, message: 'Too short' },
+                })}
+                className="w-full bg-transparent text-sm outline-none text-white placeholder:text-white/30"
+                placeholder="Food, Netflix..."
+              />
+            </div>
+            {errors.name && (
+              <p className="text-rose-400 text-[10px] ml-1 flex items-center gap-1">
+                <AlertCircle size={12} /> {errors.name.message}
+              </p>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <button
+            disabled={mutation.isPending}
+            className={`w-full h-12 rounded-xl text-sm font-semibold text-white transition active:scale-95
+              ${type === 'income' ? 'bg-green-500 hover:brightness-110' : 'bg-rose-500 hover:brightness-110'}`}
+          >
+            {mutation.isPending ? 'Processing...' : editingData ? 'Update' : 'Add Transaction'}
+          </button>
+
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 flex justify-center">
+          <div className="px-3 py-1 rounded-full bg-white/10 border border-white/20 flex items-center gap-1.5">
+            <Sparkles size={10} className="text-yellow-400" />
+            <span className="text-[9px] text-white/50">Smart Finance</span>
           </div>
         </div>
-        <button 
-          disabled={mutation.isPending}
-          className={`w-full py-5 rounded-\[2rem] font-black text-white tracking-widest uppercase text-sm transition-all flex items-center justify-center gap-3
-            ${mutation.isPending 
-              ? 'bg-slate-300 cursor-not-allowed shadow-none' 
-              : 'bg-indigo-600 shadow-[8px_8px_16px_#c2c2c2,-8px_-8px_16px_#ffffff] hover:shadow-[4px_4px_8px_#c2c2c2,-4px_-4px_8px_#ffffff] hover:scale-[0.99] active:shadow-[inset_4px_4px_8px_#4338ca] active:scale-[0.97]'}
-          `}
-        >
-          {mutation.isPending ? 'Syncing...' : (editingData ? 'Update Record' : 'Post Transaction')}
-        </button>
+
       </form>
     </div>
   );

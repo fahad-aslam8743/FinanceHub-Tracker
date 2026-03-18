@@ -12,7 +12,6 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 if (!session) {
-    console.log("No session found, redirecting to login...");
     return <Navigate to="/login" replace />;
   }
   return children;

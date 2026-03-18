@@ -19,22 +19,23 @@ const Signup = () => {
 
   const onSubmit = async (formData) => {
     setLoading(true);
-    try {
-      const { email, password } = formData;
-      const { data, error } = await supabase.auth.signUp({ email, password });
-
-      if (error) throw error;
-
-      toast.success('Account Created! Welcome.', { icon: '🚀' });
-      navigate('/dashboard');
-    } catch (error) {
-      toast.error(error.message || "Something went wrong", {
-        style: { borderRadius: '15px', background: '#fff' }
-      });
-    } finally {
-      setLoading(false);
+    const { email,password } = formData
+    const {error} =await supabase.auth.signUp({email,password})
+    if(error){
+      toast.error(error.message,{
+        duration : 3000,
+        style:{background : '#fff', color:'#000000', borderRadius:'15px'}
+      })
+    }else{
+      toast.success('Welcome! Account Created',{
+        duration : 3000,
+        style : {background : '#fff', color:'#000000',borderRadius:'15px'}
+      })
+      navigate('/dashboard')
     }
+    setLoading(false)
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5] p-6 selection:bg-indigo-100 font-sans">
