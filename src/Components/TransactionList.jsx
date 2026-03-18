@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../API/supabase';
 import { Trash2, Edit3, Loader2, ArrowUpRight, ArrowDownLeft, Search, X, Clock } from 'lucide-react';
@@ -20,22 +20,30 @@ const TransactionList = ({ onEdit }) => {
       return data;
     },
   });
+
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      await supabase.from('transactions').delete().eq('id', id);
+      const { error } = await supabase.from('transactions').delete().eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['transactions']);
       toast.success('Removed');
     },
+    onError: (error) => {
+      toast.error(error.message);
+    }
   });
+
   const filteredData = transactions?.filter(t => {
     const matchesFilter = 
       filter === 'all' ? true : 
       filter === 'income' ? t.amount > 0 : t.amount < 0;
-    const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    const nameMatch = t.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const categoryMatch = t.category?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && (nameMatch || categoryMatch);
   });
+
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center py-20">
       <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
@@ -49,7 +57,7 @@ const TransactionList = ({ onEdit }) => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600 group-focus-within:text-indigo-500 transition-colors" size={16} />
           <input 
             type="text"
-            placeholder="Search by keyword..."
+            placeholder="Search transactions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-200 dark:focus:border-indigo-900/50 transition-all"/>
@@ -100,7 +108,7 @@ const TransactionList = ({ onEdit }) => {
                     {t.name}
                   </p>
                   <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase">
-                    {new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                    {new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} • {t.category || 'General'}
                   </p>
                 </div>
               </div>
@@ -110,10 +118,20 @@ const TransactionList = ({ onEdit }) => {
                   {isIncome ? '+' : '-'}${Math.abs(t.amount).toLocaleString()}
                 </p>
                 <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
-                  <button onClick={() => onEdit(t)} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-all">
+                  <button 
+                    onClick={() => onEdit(t)} 
+                    type="button"
+                    className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-all"
+                  >
                     <Edit3 size={14} />
                   </button>
-                  <button onClick={() => deleteMutation.mutate(t.id)} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 active:scale-90 transition-all">
+                  <button 
+                    onClick={() => {
+                      if(window.confirm('Delete this record?')) deleteMutation.mutate(t.id);
+                    }} 
+                    type="button"
+                    className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 active:scale-90 transition-all"
+                  >
                     <Trash2 size={14} />
                   </button>
                 </div>

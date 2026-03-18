@@ -29,10 +29,17 @@ const Dashboard = () => {
     }
   };
 
+  // Fixed: Is function se Edit click karne par form khulega
+  const handleEdit = (data) => {
+    setEditingData(data);
+    setIsFormOpen(true);
+  };
+
   const closeForm = () => {
     setIsFormOpen(false);
     setTimeout(() => setEditingData(null), 300);
   };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 antialiased selection:bg-indigo-100 overflow-x-hidden">
       <Toaster 
@@ -47,6 +54,7 @@ const Dashboard = () => {
             border: '1px solid #f1f5f9'
           }
         }}/>
+
       <nav className="relative z-30 flex justify-between items-center px-4 md:px-12 py-5 md:py-8 max-w-[1440px] mx-auto">
         <div className="flex items-center gap-3 md:gap-4">
           <div className="w-9 h-9 md:w-10 md:h-10 bg-white shadow-sm border border-slate-100 rounded-xl md:rounded-2xl flex items-center justify-center">
@@ -63,31 +71,39 @@ const Dashboard = () => {
           </button>
         </div>
       </nav>
-      <main className={`relative z-10 transition-all duration-700 px-3 md:px-12 max-w-[1440px] mx-auto ${isFormOpen ? 'scale-[0.97] blur-md opacity-40' : 'scale-100'}`}>
+
+      <main className={`relative z-10 transition-all duration-700 px-3 md:px-12 max-w-[1440px] mx-auto ${isFormOpen ? 'scale-[0.97] blur-md opacity-40 pointer-events-none' : 'scale-100'}`}>
         <section className="mb-8 md:mb-12">
           <Stats />
         </section>
+
         <section className="max-w-[1100px] mx-auto pb-32">
           <div className="flex items-center justify-between mb-6 md:mb-8 px-1">
              <h2 className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Transaction Registry</h2>
              <div className="h-[1px] flex-1 bg-slate-100 mx-4 hidden xs:block" />
           </div>
           <div className="bg-white shadow-[0_2px_40px_-12px_rgba(0,0,0,0.05)] rounded-[2rem] border border-slate-50">
-            <TransactionList onEdit={setEditingData} />
+            <TransactionList onEdit={handleEdit} />
           </div>
         </section>
       </main>
-      <div className="fixed bottom-6 left-0 right-0 z-40 px-6 flex justify-center pointer-events-none">
-        <button 
-          onClick={() => {
-            toast.dismiss();
-            setIsFormOpen(true);
-          }}
-          className="pointer-events-auto flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-6 py-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95">
-          <Plus size={18} strokeWidth={2.5} />
-          <span className="font-bold text-xs tracking-tight">New Transaction</span>
-        </button>
-      </div>
+
+      {/* Floating Action Button */}
+      {!isFormOpen && (
+        <div className="fixed bottom-6 left-0 right-0 z-40 px-6 flex justify-center">
+          <button 
+            onClick={() => {
+              setEditingData(null);
+              setIsFormOpen(true);
+            }}
+            className="flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-6 py-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95">
+            <Plus size={18} strokeWidth={2.5} />
+            <span className="font-bold text-xs tracking-tight">New Transaction</span>
+          </button>
+        </div>
+      )}
+
+      {/* Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 lg:p-8">
           <div onClick={closeForm} className="fixed inset-0 bg-white/80 backdrop-blur-md animate-in fade-in" />
@@ -96,10 +112,16 @@ const Dashboard = () => {
               <X size={20} />
             </button>
             <div className="mb-8">
-               <h3 className="text-2xl font-black tracking-tighter text-slate-900">Add Details.</h3>
-               <p className="text-xs text-slate-400 mt-1 font-medium">Record your asset movement below.</p>
+               <h3 className="text-2xl font-black tracking-tighter text-slate-900">
+                 {editingData ? 'Edit Record.' : 'Add Details.'}
+               </h3>
+               <p className="text-xs text-slate-400 mt-1 font-medium">Update your transaction details below.</p>
             </div>
-            <TransactionForm editingData={editingData} setEditingData={setEditingData} onSuccess={closeForm} />
+            <TransactionForm 
+              editingData={editingData} 
+              setEditingData={setEditingData} 
+              onSuccess={closeForm} 
+            />
           </div>
         </div>
       )}
